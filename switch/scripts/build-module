@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# This fantastic piece of engineering is because I can't figure out how to do the equivalent in Browserify
-# without ending up with a 500k pile of goop that doesn't function.   Pull requests welcome.
-
 mkdir -p browser 
 
 cat scripts/preamble.js                                                > browser/nitrogen.js
@@ -12,7 +9,7 @@ cat scripts/module.js                                                  >> browse
 cat scripts/postamble.js                                               >> browser/nitrogen.js
 
 # these will be mixed in with their main client library equilvalents.
-uglifyjs browser/nitrogen.js -o browser/nitrogen-min.js
+uglifyjs browser/nitrogen-switch.js -o browser/nitrogen-switch-min.js
 
 # build documentation
 

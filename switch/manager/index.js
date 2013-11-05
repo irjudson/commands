@@ -1,0 +1,1 @@
+exports.SwitchManager = require('./switchManager');
