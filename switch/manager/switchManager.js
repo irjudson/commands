@@ -1,13 +1,10 @@
-// TODO: Move out of core to a seperate module 
-
-var CommandManager = require('./commandManager')
-  , Message = require('./message');
+var nitrogen = require('nitrogen');
 
 function SwitchManager() {
-    CommandManager.apply(this, arguments);
+    nitrogen.CommandManager.apply(this, arguments);
 }
 
-SwitchManager.prototype = Object.create(CommandManager.prototype);
+SwitchManager.prototype = Object.create(nitrogen.CommandManager.prototype);
 SwitchManager.prototype.constructor = SwitchManager;
 
 SwitchManager.prototype.executeQueue = function(callback) {
@@ -23,7 +20,7 @@ SwitchManager.prototype.executeQueue = function(callback) {
         this.device.set(lastCommand.body.command.on, function(state, changed) {
             console.log('switchManager: switch set to ' + state);
 
-            var message = new Message({
+            var message = new nitrogen.Message({
                 type: 'switchState',
                 response_to: [ lastCommand.id ],
                 body: {
@@ -52,13 +49,13 @@ SwitchManager.prototype.isRelevant = function(message) {
 };
 
 SwitchManager.prototype.obsoletes = function(downstreamMsg, upstreamMsg) {
-    if (CommandManager.obsoletes(downstreamMsg, upstreamMsg)) return true;
+    if (nitrogen.CommandManager.obsoletes(downstreamMsg, upstreamMsg)) return true;
 
     return downstreamMsg.is('switchCommand') || downstreamMsg.is('switchState') && downstreamMsg.isResponseTo(upstreamMsg);
 };
 
 SwitchManager.prototype.process = function(message) {
-    CommandManager.prototype.process.apply(this, arguments);
+    nitrogen.CommandManager.prototype.process.apply(this, arguments);
 
     if (message.is('switchState')) {
         this.state = message.body.on;
