@@ -1,1 +1,1 @@
-setTimeout(function() { window.nitrogen.CameraManager = CameraManager; }, 0);
+setTimeout(function() { window.nitrogen.SwitchManager = SwitchManager; }, 0);
