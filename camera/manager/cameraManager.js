@@ -23,7 +23,7 @@ CameraManager.prototype.executeQueue = function(callback) {
     var messagesGenerated = [];
 
     this.device.snapshot({}, function(err, shot) {
-        if (err) return callback('camera snapshot failed with error: ' + err);
+        if (err) return callback('CameraManager::execute: snapshot failed: ' + err);
 
         self.history.push(shot);
 
@@ -130,14 +130,14 @@ CameraManager.prototype.sendImage = function(shot, attributes, callback) {
             });
 
             for (var attribute in attributes) {
-                console.log('setting attribute: ' + attribute + ' to ' + attributes[attribute]);
+                self.session.log.debug('CameraManager::sendImage: setting attribute: ' + attribute + ' to ' + attributes[attribute]);
                 message[attribute] = attributes[attribute];
             }
 
             message.send(self.session, function(err, messages) {
                 if (err) return callback("failed to send message for path: " + shot.path + " :" + err);
 
-                console.log("sent image message: " + JSON.stringify(messages));
+                self.session.log.info("CameraManager::sendImage: image sent: " + JSON.stringify(messages));
 
                 callback(null, messages[0]);
             });

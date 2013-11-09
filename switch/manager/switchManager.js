@@ -17,7 +17,7 @@ SwitchManager.prototype.executeQueue = function(callback) {
 
     var lastCommand = this.lastActiveCommand();
     if (lastCommand) {
-        this.device.set(lastCommand.body.command.on, function(state, changed) {
+        this.device.set(lastCommand.body.on, function(state, changed) {
             console.log('switchManager: switch set to ' + state);
 
             var message = new nitrogen.Message({
