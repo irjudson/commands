@@ -1,0 +1,25 @@
+{
+  "name": "nitrogen-opencv-camera",
+  "homepage": "https://github.com/nitrogenjs/commands",
+  "repository" : {
+      "type" : "git",
+      "url" : "https://github.com/nitrogenjs/commands.git"
+  },
+  "author": "Tim Park <timfpark@gmail.com>",
+  "version": "0.1.0",
+  "licenses" : [{
+    "type": "Apache",
+    "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+  }],
+
+  "main": "./manager",
+
+  "dependencies": {
+    "async": "*",
+    "nitrogen": "*",
+    "opencv": "*"
+  },
+  "devDependencies": {
+    "mocha": "1.x"
+  }
+}
