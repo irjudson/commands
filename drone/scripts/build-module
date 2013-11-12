@@ -1,0 +1,16 @@
+#!/bin/bash
+
+mkdir -p browser 
+
+cat scripts/preamble.js                                                > browser/nitrogen.js
+cat manager/switchManager.js | sed '/require(/d' | sed '/module.export/d' >> browser/nitrogen.js
+
+cat scripts/module.js                                                  >> browser/nitrogen.js
+cat scripts/postamble.js                                               >> browser/nitrogen.js
+
+# these will be mixed in with their main client library equilvalents.
+node_modules/.bin/uglifyjs browser/nitrogen.js > browser/nitrogen-min.js
+
+# build documentation
+
+node_modules/.bin/yuidoc .
