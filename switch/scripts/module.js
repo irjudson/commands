@@ -1,1 +1,1 @@
-setTimeout(function() { window.nitrogen.SwitchManager = SwitchManager; }, 0);
+setTimeout(function() { window.nitrogen.SwitchManager = SwitchManager; }, 1);
