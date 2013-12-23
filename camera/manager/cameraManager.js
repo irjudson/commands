@@ -145,4 +145,15 @@ CameraManager.prototype.sendImage = function(shot, attributes, callback) {
     });
 };
 
+CameraManager.prototype.start = function(session, callback) {
+    var filter = {
+        $and: [ 
+            { $or: [ { to: session.principal.id }, { from: session.principal.id } ] },
+            { $or: [ { type: 'cameraCommand'}, { type: 'image' } ] }
+        ]
+    };
+
+    return nitrogen.CommandManager.prototype.start.call(this, session, filter, callback);
+};
+
 module.exports = CameraManager;
