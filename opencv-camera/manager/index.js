@@ -1,14 +1,14 @@
 var async = require('async')
-  , nitrogen = require('nitrogen')
+  , CameraManager = require('nitrogen-camera').CameraManager
   , cv = require('nitrogen-opencv');
 
 function OpenCVCameraManager() {
-    nitrogen.CameraManager.apply(this, arguments);
+    CameraManager.apply(this, arguments);
 }
 
 OpenCVCameraManager.DEFAULT_MOTION_THRESHOLD = 0.03;  // 3% of pixels showing motion.
 
-OpenCVCameraManager.prototype = Object.create(nitrogen.CameraManager.prototype);
+OpenCVCameraManager.prototype = Object.create(CameraManager.prototype);
 OpenCVCameraManager.prototype.constructor = OpenCVCameraManager;
 
 OpenCVCameraManager.prototype.detectMotion = function(command, callback) {
