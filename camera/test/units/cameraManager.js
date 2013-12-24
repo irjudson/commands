@@ -52,7 +52,7 @@ describe('cameraManager', function() {
         service.connect(camera, function(err, session) {
             var cameraManager = new CameraManager(camera);
             var gotCallback = false;
-            cameraManager.start(session, {}, function(err) {
+            cameraManager.start(session, function(err) {
                 assert.equal(err, undefined);
                 if (!gotCallback) {
                     gotCallback = true;
