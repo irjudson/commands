@@ -145,10 +145,10 @@ CameraManager.prototype.sendImage = function(shot, attributes, callback) {
     });
 };
 
-CameraManager.prototype.start = function(session, callback) {
+CameraManager.prototype.start = function(session, cameraId, callback) {
     var filter = {
         $and: [ 
-            { $or: [ { to: session.principal.id }, { from: session.principal.id } ] },
+            { $or: [ { to: cameraId }, { from: cameraId } ] },
             { $or: [ { type: 'cameraCommand'}, { type: 'image' } ] }
         ]
     };
