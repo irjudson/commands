@@ -4,7 +4,10 @@ A subclass of CameraManager that uses OpenCV to implement motion detection.
 
 ## Getting Started
 
-`npm install nitrogen-opencv-camera`
+1. Make sure you have the opencv development libraries installed. 
+   a. For Mac: sudo port install opencv
+   b. For Linux/Raspberry Pi: sudo apt-get install libopencv-dev 
+2. `npm install nitrogen-opencv-camera`
 
 ## Other Projects
 
