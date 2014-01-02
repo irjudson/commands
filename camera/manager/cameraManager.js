@@ -17,13 +17,11 @@ CameraManager.prototype.constructor = CameraManager;
 CameraManager.prototype.executeQueue = function(callback) {
     if (!this.device) return callback(new Error('no camera attached to camera manager.'));
 
-    // if there is a queue, for a camera manager that means there is something to do.
-
     var self = this;
     var messagesGenerated = [];
 
     this.device.snapshot({}, function(err, shot) {
-        if (err) return callback('CameraManager::execute: snapshot failed: ' + err);
+        if (err) return callback(new Error('CameraManager::execute: snapshot failed: ' + err));
 
         self.history.push(shot);
 
@@ -43,6 +41,7 @@ CameraManager.prototype.executeQueue = function(callback) {
 
             testCommandTriggered(function(triggered) {
                 if (triggered) {
+                    self.session.log.debug("CameraManager::executeQueue: command message satisfied: " + JSON.stringify(activeCommand));
                     attributes.response_to.push(activeCommand.id);
 
                     // allow passing through attributes from commands to message
@@ -59,13 +58,16 @@ CameraManager.prototype.executeQueue = function(callback) {
         // only send a message if we are able to satisfy at least one command in the queue.
         if (attributes.response_to.length > 0) {
             self.sendImage(shot, attributes, function(err, message) {
-                if (err) return;
+                if (err) return callback(err);
 
                 self.process(message);
+                self.session.log.debug('CameraManager: resizing history (response_to > 0 path)');
+
                 self.resizeHistory();
                 callback();
             });
         } else {
+            self.session.log.debug('CameraManager: resizing history (response_to == 0 path)');
             self.resizeHistory();
             callback();
         }
@@ -106,6 +108,7 @@ CameraManager.prototype.resizeHistory = function() {
 
     var sliceStart = Math.max(0, this.history.length - this.historyRequired());
     for (var i=0; i < sliceStart; i++) {
+        this.session.log.debug('CameraManager: deleting: ' + this.history[i].path);
         fs.unlink(this.history[i].path);
     }
     this.history = this.history.slice(sliceStart);
@@ -130,12 +133,13 @@ CameraManager.prototype.sendImage = function(shot, attributes, callback) {
             });
 
             for (var attribute in attributes) {
-                self.session.log.debug('CameraManager::sendImage: setting attribute: ' + attribute + ' to ' + attributes[attribute]);
                 message[attribute] = attributes[attribute];
             }
 
+            self.session.log.debug("CameraManager::sendImage: sending message: " + JSON.stringify(message));
+
             message.send(self.session, function(err, messages) {
-                if (err) return callback("failed to send message for path: " + shot.path + " :" + err);
+                if (err) return callback("CameraManager::sendImage: failed to send message for image: " + err);
 
                 self.session.log.info("CameraManager::sendImage: image sent: " + JSON.stringify(messages));
 
