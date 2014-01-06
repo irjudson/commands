@@ -1,6 +1,6 @@
 var assert = require('assert')
   , config = require('../config')
-  , SwitchManager = require('../../manager').SwitchManager
+  , SwitchManager = require('../../manager')
   , nitrogen = require('nitrogen');
 
 describe('switchManager', function() {
