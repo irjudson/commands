@@ -16,8 +16,7 @@ describe('switchManager', function() {
         service.connect(switchDevice, function(err, session) {
             assert.ifError(err);
 
-            var switchManager = new SwitchManager(switchDevice);
-            switchManager.start(session, { $or: [ { to: switchDevice.id }, { from: switchDevice.id } ] }, function(err) {
+            new SwitchManager(switchDevice).start(session, function(err) {
                 assert.ifError(err);
                 done();
             });

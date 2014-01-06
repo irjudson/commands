@@ -63,4 +63,15 @@ SwitchManager.prototype.process = function(message) {
     }
 };
 
+SwitchManager.prototype.start = function(session, callback) {
+    var filter = {
+        $and: [ 
+            { $or: [ { to: this.device.id }, { from: deviceId } ] },
+            { $or: [ { type: 'switchCommand'}, { type: 'switchState' } ] }
+        ]
+    };
+
+    return nitrogen.CommandManager.prototype.start.call(this, session, filter, callback);
+};
+
 module.exports = SwitchManager;
