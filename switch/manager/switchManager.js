@@ -66,7 +66,7 @@ SwitchManager.prototype.process = function(message) {
 SwitchManager.prototype.start = function(session, callback) {
     var filter = {
         $and: [ 
-            { $or: [ { to: this.device.id }, { from: deviceId } ] },
+            { $or: [ { to: this.device.id }, { from: this.device.id } ] },
             { $or: [ { type: 'switchCommand'}, { type: 'switchState' } ] }
         ]
     };
