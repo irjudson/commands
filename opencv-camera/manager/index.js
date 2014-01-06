@@ -1,5 +1,5 @@
 var async = require('async')
-  , CameraManager = require('nitrogen-camera').CameraManager
+  , CameraManager = require('nitrogen-camera')
   , cv = require('nitrogen-opencv');
 
 function OpenCVCameraManager() {
