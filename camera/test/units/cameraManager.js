@@ -2,7 +2,7 @@ var assert = require('assert')
   , config = require('../config')
   , nitrogen = require('nitrogen')
   , path = require('path')
-  , CameraManager = require('../../manager').CameraManager;
+  , CameraManager = require('../../manager');
 
 describe('cameraManager', function() {
 
