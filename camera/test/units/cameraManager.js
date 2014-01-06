@@ -49,15 +49,13 @@ describe('cameraManager', function() {
             nickname: "camera"
         });
 
-        service.connect(camera, function(err, session) {
-            var cameraManager = new CameraManager(camera);
-            var gotCallback = false;
-            cameraManager.start(session, camera.id, function(err) {
-                assert.equal(err, undefined);
-                if (!gotCallback) {
-                    gotCallback = true;
-                    done();
-                }
+        service.connect(camera, function(err, session, camera) {
+            assert.ifError(err);
+
+            new CameraManager(camera).start(session, function(err) {
+                assert.ifError(err);
+
+                done();
             });
         });
     });
