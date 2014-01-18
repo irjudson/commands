@@ -1,0 +1,25 @@
+{
+	"title": "switchCommand",
+	"type": "object",
+	"properties": {
+        "brightness": {
+            "type": "number",
+            "required": false        
+        },
+
+        "hue": {
+            "type": "number",
+            "required": false        
+        },
+
+        "on": {
+            "type": "number",
+            "required": false
+        },
+                
+        "saturation": {
+            "type": "number",
+            "required": false        
+        }
+	}
+}
