@@ -1,6 +1,6 @@
-# nitrogen-lightCommand 
+# nitrogen-light
 
-This module adds lightCommand functionality to an application, service, or admin tool.  Light commands are used to control light devices that have hue, brightness, saturation, and on/off control.
+This module adds lightCommand and lightStatus functionality to an application, service, or admin tool.  Light commands are used to control light devices that have hue, brightness, saturation, and on/off control.
 
 ## Other Projects
 
