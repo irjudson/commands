@@ -2,7 +2,7 @@
     "title": "lightCommand",
     "type": "object",
     "properties": {
-        "brightness": {
+        "bri": {
             "type": "number",
             "required": false        
         },
@@ -13,11 +13,11 @@
         },
 
         "on": {
-            "type": "number",
+            "type": "boolean",
             "required": false
         },
                 
-        "saturation": {
+        "sat": {
             "type": "number",
             "required": false        
         }

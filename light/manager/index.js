@@ -10,7 +10,7 @@ LightManager.prototype.constructor = LightManager;
 
 LightManager.prototype.applyCommand = function(command) {
     for (var key in command.body) {
-        this.state = command.body[key];
+        this.state[key] = command.body[key];
     }
 };
 
@@ -27,7 +27,7 @@ LightManager.prototype.executeQueue = function(callback) {
 
     this.device.set(this.state, function(err) {
         if (err) return callback(err);
-        
+
         var message = new nitrogen.Message({
             type: 'lightState',
             response_to: commandIds,
