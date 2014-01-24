@@ -21,7 +21,7 @@ LightManager.prototype.executeQueue = function(callback) {
     var self = this;
 
     this.activeCommands().forEach(function(command) {
-        this.applyCommand(command);
+        self.applyCommand(command);
         commandIds.push(command.id)
     });
 
