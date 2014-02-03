@@ -1,0 +1,15 @@
+{
+	"title": "switchState",
+	"type": "object",
+	"properties": {
+        "state": {
+            "enum": [ "started", "stopped" ],
+            "type": "string",
+            "required": true
+        },
+		"instance_id": {
+			"type": "string",
+			"required": true
+		}       
+	}
+}

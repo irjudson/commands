@@ -1,0 +1,27 @@
+{
+	"title": "reactorCommand",
+	"type": "object",
+	"properties": {
+        "command": {
+            "enum": [ "install", "start", "stop", "uninstall" ],
+            "type": "string",
+            "required": true
+        },
+        "instance_id": {
+            "type": "string",
+            "required": true
+        },
+        "module": {
+            "type": "string",
+            "required": false
+        },
+        "params": {
+            "type": "object",
+            "required": false
+        },
+        "execute_as": {
+            "type": "string",
+            "required": false
+        }
+	}
+}
