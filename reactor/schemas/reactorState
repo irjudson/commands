@@ -1,15 +1,10 @@
 {
-	"title": "switchState",
-	"type": "object",
-	"properties": {
+    "title": "reactorState",
+    "type": "object",
+    "properties": {
         "state": {
-            "enum": [ "started", "stopped" ],
-            "type": "string",
+            "type": "object",
             "required": true
-        },
-		"instance_id": {
-			"type": "string",
-			"required": true
-		}       
-	}
+        }       
+    }
 }
