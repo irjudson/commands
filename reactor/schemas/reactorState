@@ -1,0 +1,10 @@
+{
+    "title": "reactorState",
+    "type": "object",
+    "properties": {
+        "state": {
+            "type": "object",
+            "required": true
+        }       
+    }
+}

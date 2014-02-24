@@ -1,5 +1,5 @@
 {
-  "name": "nitrogen-light",
+  "name": "nitrogen-reactor",
   "homepage": "https://github.com/nitrogenjs/commands",
   "author": "Tim Park <timfpark@gmail.com>",
   "licenses": [
@@ -13,9 +13,12 @@
     "type": "git",
     "url": "https://github.com/nitrogenjs/commands.git"
   },
-  "version": "0.1.14",
+  "version": "0.1.13",
   "dependencies": {
-    "nitrogen": "~0.1.205"
+    "nitrogen": "~0.1.213",
+    "uglify-js": "~1.3.5",
+    "mocha": "~1.0.3",
+    "nitrogen-leveldb-store": "~0.1.203"
   },
   "devDependencies": {
     "mocha": "~1.0",
