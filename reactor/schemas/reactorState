@@ -3,7 +3,7 @@
     "type": "object",
     "properties": {
         "state": {
-            "type": "object",
+            "type": "string",
             "required": true
         }       
     }
