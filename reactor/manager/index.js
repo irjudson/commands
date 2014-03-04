@@ -14,67 +14,66 @@ function ReactorManager() {
 ReactorManager.prototype = Object.create(nitrogen.CommandManager.prototype);
 ReactorManager.prototype.constructor = ReactorManager;
 
-ReactorManager.prototype.buildState = function() {
-    var state = {};
+ReactorManager.prototype.currentCommands = function() {
+    var currentCommands = {};
     this.messageQueue.forEach(function(message) {
-
-        state[message.body.instance_id] = state[message.body.instance_id] || {};
-
         if (message.is('reactorCommand')) {
-            state[message.body.instance_id].command = message;
-        } else {
-            state[message.body.instance_id].state = message;
+            currentCommands[message.body.instance_id] = message;
         }
     });
 
-    return state;
+    return currentCommands;
 };
 
 ReactorManager.prototype.executeQueue = function(callback) {
     if (!this.device) return callback(new Error('No reactor attached to reactor manager.'));
 
     var self = this;
-    var newState = this.buildState();
-    console.log('new state: ' + JSON.stringify(newState));
+    var currentCommands = this.currentCommands();
+    var currentState = this.device.getState();
+
+    console.log('current commands: ' + JSON.stringify(currentCommands));
+    console.log('current state: ' + JSON.stringify(currentState));
 
     // look for a state change and execute it.
     // if there is more than one state change, we catch that at the next execution.
-    Object.keys(newState).forEach(function(instanceId) {
+    Object.keys(currentCommands).forEach(function(instanceId) {
 
-        var newCommand = newState[instanceId].command;
-        var currentCommand = self.reactorState[instanceId] ? self.reactorState[instanceId].command : null;
+        console.log('instance id: ' + instanceId);
 
-        if (!currentCommand || 
-            newCommand.body.command !== currentCommand.body.command) {
-            switch (newCommand.body.command) {
+        var currentCommand = currentCommands[instanceId];
+
+        console.log('current command: ' + JSON.stringify(currentCommand));
+
+        if (!currentState[instanceId] || !currentState[instanceId].command ||
+             currentCommand.body.command !== currentState[instanceId].command) {
+            switch (currentCommand.body.command) {
                 case 'install': {
-                    self.device.install(newCommand, self.sendState);
+                    console.log('executing install');
+                    self.device.install(currentCommand, self.statusCallback());
                     break;
                 }
 
                 case 'start': {
-                    self.device.start(self.session, newCommand, self.sendState);
+                    console.log('executing start');
+                    self.device.start(self.session, currentCommand, self.statusCallback());
                     break;
                 }
 
                 case 'stop': {
-                    self.device.stop(newCommand, self.sendState);
+                    console.log('executing stop');
+                    self.device.stop(currentCommand, self.statusCallback());
                     break;
                 }
 
                 case 'uninstall': {
-                    self.device.uninstall(newCommand, self.sendState);
+                    console.log('executing uninstall');
+                    self.device.uninstall(currentCommand, self.statusCallback());
                     break;
                 }
             }
         }
     });
-
-    this.reactorState = newState;
-};
-
-ReactorManager.prototype.installInstance = function(command, callback) {
-    this.device.install(command, this.sendState);
 };
 
 ReactorManager.prototype.isCommand = function(message) {
@@ -105,23 +104,27 @@ ReactorManager.prototype.obsoletes = function(downstreamMsg, upstreamMsg) {
            downstreamMsg.body.instance_id === upstreamMsg.body.instance_id;
 };
 
-ReactorManager.prototype.sendState = function(err, command, callback) {
-    var state = this.device.getState();
+ReactorManager.prototype.statusCallback = function() {
+    var self = this;
 
-    if (err) {
-        this.session.log.error(err);
-    }
+    return function(err, command) {
+        var state = self.device.getState();
 
-    var stateMessage = new nitrogen.Message({
-        type: 'reactorState',
-        response_to: [ command.id ],
-        body: {
-            state: state
+        if (err) {
+            self.session.log.error(err);
         }
-    });
 
-    stateMessage.send(this.session, callback);
-};
+        var stateMessage = new nitrogen.Message({
+            type: 'reactorState',
+            response_to: [ command.id ],
+            body: {
+                state: state
+            }
+        });
+
+        stateMessage.send(self.session);
+    };
+}
 
 ReactorManager.prototype.start = function(session, callback) {
     var filter = {
