@@ -4,10 +4,31 @@ function ReactorManager() {
     nitrogen.CommandManager.apply(this, arguments);
 
     this.reactorState = {};
+
+    var self = this;
+    process.on('exit', function() {
+        self.device.shutdown();
+    });
 }
 
 ReactorManager.prototype = Object.create(nitrogen.CommandManager.prototype);
 ReactorManager.prototype.constructor = ReactorManager;
+
+ReactorManager.prototype.buildState = function() {
+    var state = {};
+    this.messageQueue.forEach(function(message) {
+
+        state[message.body.instance_id] = state[message.body.instance_id] || {};
+
+        if (message.is('reactorCommand')) {
+            state[message.body.instance_id].command = message;
+        } else {
+            state[message.body.instance_id].state = message;
+        }
+    });
+
+    return state;
+};
 
 ReactorManager.prototype.executeQueue = function(callback) {
     if (!this.device) return callback(new Error('No reactor attached to reactor manager.'));
@@ -26,27 +47,24 @@ ReactorManager.prototype.executeQueue = function(callback) {
         if (!currentCommand || 
             newCommand.body.command !== currentCommand.body.command) {
             switch (newCommand.body.command) {
+                case 'install': {
+                    self.device.install(newCommand, self.sendState);
+                    break;
+                }
+
                 case 'start': {
-                    self.device.start(newCommand, callback);
-                    // TODO: start app in reactor
+                    self.device.start(self.session, newCommand, self.sendState);
                     break;
                 }
 
                 case 'stop': {
-                    if (currentCommand) {
-                        // TODO: stop app in reactor
-                        self.device.stop(newCommand, callback);                        
-                    }
-                    break;
-                }
-
-                case 'install': {
-                    self.device.install(newCommand, callback);
+                    self.device.stop(newCommand, self.sendState);
                     break;
                 }
 
                 case 'uninstall': {
-                    self.device.uninstall(newCommand, callback);
+                    self.device.uninstall(newCommand, self.sendState);
+                    break;
                 }
             }
         }
@@ -55,20 +73,8 @@ ReactorManager.prototype.executeQueue = function(callback) {
     this.reactorState = newState;
 };
 
-ReactorManager.prototype.buildState = function() {
-    var state = {};
-    this.messageQueue.forEach(function(message) {
-
-        state[message.body.instance_id] = state[message.body.instance_id] || {};
-
-        if (message.is('reactorCommand')) {
-            state[message.body.instance_id].command = message;
-        } else {
-            state[message.body.instance_id].state = message;
-        }
-    });
-
-    return state;
+ReactorManager.prototype.installInstance = function(command, callback) {
+    this.device.install(command, this.sendState);
 };
 
 ReactorManager.prototype.isCommand = function(message) {
@@ -97,6 +103,24 @@ ReactorManager.prototype.obsoletes = function(downstreamMsg, upstreamMsg) {
         || downstreamMsg.is('reactorStatus') && upstreamMsg.is('reactorStatus')
         || downstreamMsg.is('reactorCommand') && upstreamMsg.is('reactorCommand') &&
            downstreamMsg.body.instance_id === upstreamMsg.body.instance_id;
+};
+
+ReactorManager.prototype.sendState = function(err, command, callback) {
+    var state = this.device.getState();
+
+    if (err) {
+        this.session.log.error(err);
+    }
+
+    var stateMessage = new nitrogen.Message({
+        type: 'reactorState',
+        response_to: [ command.id ],
+        body: {
+            state: state
+        }
+    });
+
+    stateMessage.send(this.session, callback);
 };
 
 ReactorManager.prototype.start = function(session, callback) {
