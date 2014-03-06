@@ -20,19 +20,19 @@ MockReactor.prototype.getInstanceInfo = function(instanceId) {
     return this.instances[instanceId];
 };
 
-MockReactor.prototype.getState = function() {
+MockReactor.prototype.status = function() {
     return this.instances;
 };
 
-MockReactor.prototype.install = function(command, callback) {
+MockReactor.prototype.install = function(command, statusCallback, callback) {
     var self = this;
 
-    this.updateState('installing', command, callback);
-    console.log('MockReactor: installing: ' + JSON.stringify(command));
+    this.updateState('installing', command, statusCallback);
 
     setTimeout(function() {
-        console.log('MockReactor: finished installing -> moving to stopped.');
-        self.updateState('stopped', command, callback);
+        self.updateState('stopped', command, statusCallback);
+
+        return callback();
     }, 150);
 };
 
@@ -40,48 +40,52 @@ MockReactor.prototype.shutdown = function() {
     console.log('MockReactor: shutting down.');
 };
 
-MockReactor.prototype.start = function(session, command, callback) {
+MockReactor.prototype.start = function(session, command, statusCallback, callback) {
     var self = this;
 
-    this.updateState('impersonating', command, callback);
+    this.updateState('impersonating', command, statusCallback);
 
     setTimeout(function() {
-        self.updateState('starting', command, callback);
+        self.updateState('starting', command, statusCallback);
 
         setTimeout(function() {
-            self.updateState('running', command, callback);
+            self.updateState('running', command, statusCallback);
+
+            return callback();
         }, 150);
 
     }, 150);
 };
 
-MockReactor.prototype.stop = function(command, callback) {
+MockReactor.prototype.stop = function(command, statusCallback, callback) {
     var self = this;
 
-    this.updateState('stopping', command, callback);
+    this.updateState('stopping', command, statusCallback);
     setTimeout(function() {
-        self.updateState('stopped', command, callback);
+        self.updateState('stopped', command, statusCallback);
+
+        return callback();
     }, 150);
 };
 
-MockReactor.prototype.uninstall = function(command, callback) {
+MockReactor.prototype.uninstall = function(command, statusCallback, callback) {
     var self = this;
 
-    this.updateState('uninstalling', command, callback);
+    this.updateState('uninstalling', command, statusCallback);
     setTimeout(function() {
-        self.updateState('uninstalled', command, callback);
+        self.updateState('uninstalled', command, statusCallback);
+
+        return callback();
     }, 150);
 };
 
-MockReactor.prototype.updateState = function(state, command, callback) {
+MockReactor.prototype.updateState = function(state, command, statusCallback) {
     var instanceInfo = this.getInstanceInfo(command.body.instance_id);
 
     instanceInfo.command = command;
     instanceInfo.state = state;
 
-    console.log('updateState: ' + state + ' command: ' + JSON.stringify(command));
-
-    callback(null, command);
+    statusCallback(null, command);
 };
 
 module.exports = MockReactor;
