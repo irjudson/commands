@@ -103,20 +103,21 @@ ReactorManager.prototype.restore = function(callback) {
             if (err) return callback(err);
 
             if (messages.length > 0) {
-                state = messages[0].body.state || {};
+                self.device.instances = messages[0].body.state || {};
                 self.session.log.info('restoring reactor from reactorState @ ' + messages[0].ts);
             } else {
-                self.session.log.info("********************** NO REACTORSTATE");
+                self.session.log.info("no reactorState messages found. starting clean.");
             }
 
-            for (var instanceId in state) {
-                self.session.log.info('instance id: ' + instanceId + ' is in state: ' + state[instanceId].state);
-                if (state[instanceId].state === 'running') {
+            for (var instanceId in self.device.instances) {
+                self.session.log.info('instance id: ' + instanceId + ' is in state: ' + self.device.instances[instanceId].state);
+                if (self.device.instances[instanceId].state === 'running') {
                     self.session.log.info('---> starting');
-                    self.device.start(self.session, state[instanceId].command, self.statusCallback()); 
+                    self.device.start(self.session, self.device.instances[instanceId].command, self.statusCallback()); 
                 }
             }
 
+            self.statusCallback()(null, null, self.device.status());
             return callback();
         }
     );
@@ -126,7 +127,8 @@ ReactorManager.prototype.statusCallback = function() {
     var self = this;
 
     return function(err, command, state) {
-        var responseTo = [ command.id ];
+        if (command)
+            var responseTo = [ command.id ];
 
         if (err) {
             self.session.log.error(err);
