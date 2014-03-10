@@ -112,8 +112,12 @@ ReactorManager.prototype.restore = function(callback) {
             for (var instanceId in self.device.instances) {
                 self.session.log.info('instance id: ' + instanceId + ' is in state: ' + self.device.instances[instanceId].state);
                 if (self.device.instances[instanceId].state === 'running') {
-                    self.session.log.info('---> starting');
-                    self.device.start(self.session, self.device.instances[instanceId].command, self.statusCallback()); 
+                    if (self.device.instances[instanceId].command) {
+                        self.session.log.info('---> starting');
+                        self.device.start(self.session, self.device.instances[instanceId].command, self.statusCallback()); 
+                    } else {
+                        self.session.log.warn('but no command to start instance --> not starting.');
+                    }
                 }
             }
 
