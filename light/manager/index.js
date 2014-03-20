@@ -55,7 +55,7 @@ LightManager.prototype.isRelevant = function(message) {
 LightManager.prototype.obsoletes = function(downstreamMsg, upstreamMsg) {
     if (nitrogen.CommandManager.obsoletes(downstreamMsg, upstreamMsg)) return true;
 
-    return downstreamMsg.is('lightCommand') || downstreamMsg.is('lightState') && downstreamMsg.isResponseTo(upstreamMsg);
+    return upstreamMsg.is('lightCommand') && downstreamMsg.is('lightCommand') && downstreamMsg.millisToTimestamp() < 0 || downstreamMsg.is('lightState') && downstreamMsg.isResponseTo(upstreamMsg);
 };
 
 LightManager.prototype.process = function(message) {
@@ -63,7 +63,6 @@ LightManager.prototype.process = function(message) {
 
     if (message.is('lightState')) {
         this.state = message.body;
-        console.log('new lightManager state: ' + JSON.stringify(this.state));        
     }
 };
 
