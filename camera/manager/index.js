@@ -5,11 +5,7 @@ var async = require('async')
 
 function CameraManager() {
     nitrogen.CommandManager.apply(this, arguments);
-
-    this.history = [];
 }
-
-CameraManager.DEFAULT_MOTION_THRESHOLD = 0.03;  // 3% of pixels showing motion.
 
 CameraManager.prototype = Object.create(nitrogen.CommandManager.prototype);
 CameraManager.prototype.constructor = CameraManager;
@@ -17,75 +13,58 @@ CameraManager.prototype.constructor = CameraManager;
 CameraManager.prototype.executeQueue = function(callback) {
     if (!this.device) return callback(new Error('no camera attached to camera manager.'));
 
+    var activeCommands = this.activeCommands();
+    if (activeCommands.length === 0) {
+        session.log.warn('CameraManager::executeQueue: no active commands to execute.');
+        return callback();
+    }
+
+    var executeCommand = activeCommands[0];
+
+    // TODO: generalize to allow for video command
+    
+//    var deviceFunction;
+
+//    if (executeCommand.body.command === 'snapshot')
+//        deviceFunction = this.device.snapshot;
+//    else
+//        deviceFunction = this.device.recordVideo;   
+        
+    var options = executeCommand.body.options || {};  
+ 
     var self = this;
     var messagesGenerated = [];
 
-    this.device.snapshot({}, function(err, shot) {
-        if (err) return callback(new Error('CameraManager::execute: snapshot failed: ' + err));
-
-        self.history.push(shot);
-
+    this.device.snapshot(options, function(process, shot) {        
         // walk through the list of commands and see which ones we can satisfy.
         // as we do satisfy them, add them to response_to and incorporate their attributes.
 
         var attributes = {};
         attributes.response_to = [];
 
-        self.activeCommands().forEach(function(activeCommand) {
-            var testCommandTriggered;
-            if (activeCommand.body.command == "motion") {
-                testCommandTriggered = function(cb) { self.detectMotion(activeCommand, cb); };
-            } else if (activeCommand.body.command == "snapshot") {
-                testCommandTriggered = function(cb) { cb(true); };
-            }
+        activeCommands.forEach(function(activeCommand) {
+            if (executeCommand.body.command === activeCommand.body.command) {
+                self.session.log.info("CameraManager::executeQueue: command message satisfied: " + JSON.stringify(activeCommand));
+                attributes.response_to.push(activeCommand.id);
 
-            testCommandTriggered(function(triggered) {
-                if (triggered) {
-                    self.session.log.debug("CameraManager::executeQueue: command message satisfied: " + JSON.stringify(activeCommand));
-                    attributes.response_to.push(activeCommand.id);
-
-                    // allow passing through attributes from commands to message
-                    if (activeCommand.body.message) {
-                        // TODO: need some way to intelligently combine attributes (max 'expires', etc.)
-                        for (var key in activeCommand.body.message) {
-                            attributes[key] = activeCommand.body.message[key];
-                        }
+                // allow passing through attributes from commands to message
+                if (activeCommand.body.message) {
+                    // TODO: need some way to intelligently combine attributes (max 'expires', etc.)
+                    for (var key in activeCommand.body.message) {
+                        attributes[key] = activeCommand.body.message[key];
                     }
                 }
-            });
+            }
         });
 
         // only send a message if we are able to satisfy at least one command in the queue.
-        if (attributes.response_to.length > 0) {
-            self.sendImage(shot, attributes, function(err, message) {
-                if (err) return callback(err);
+        self.sendResponse(process, shot, attributes, function(err, message) {
+            if (err) return callback(err);
 
-                self.process(message);
-                self.session.log.debug('CameraManager: resizing history (response_to > 0 path)');
-
-                self.resizeHistory();
-                callback();
-            });
-        } else {
-            self.session.log.debug('CameraManager: resizing history (response_to == 0 path)');
-            self.resizeHistory();
+            self.process(message);
             callback();
-        }
+        });
     });
-};
-
-CameraManager.prototype.historyRequired = function() {
-    var historyRequired = 0;
-    this.activeCommands().forEach(function(activeCommand) {
-        var cmd = activeCommand.body.command;
-
-        if (cmd === "snapshot")
-            historyRequired = Math.max(1, historyRequired);
-        else if (cmd === "motion")
-            historyRequired = 3;
-    });
-
-    return historyRequired;
 };
 
 CameraManager.prototype.isRelevant = function(message) {
@@ -103,48 +82,41 @@ CameraManager.prototype.obsoletes = function(downstreamMsg, upstreamMsg) {
         downstreamMsg.is('image') && downstreamMsg.isResponseTo(upstreamMsg) && upstreamMsg.body.command === "snapshot";
 };
 
-CameraManager.prototype.resizeHistory = function() {
-    // resize history to match up with requirements.
-
-    var sliceStart = Math.max(0, this.history.length - this.historyRequired());
-    for (var i=0; i < sliceStart; i++) {
-        this.session.log.debug('CameraManager: deleting: ' + this.history[i].path);
-        fs.unlink(this.history[i].path);
-    }
-    this.history = this.history.slice(sliceStart);
-};
-
-CameraManager.prototype.sendImage = function(shot, attributes, callback) {
+CameraManager.prototype.sendResponse = function(process, shot, attributes, callback) {
     var self = this;
 
-    nitrogen.Blob.fromFile(shot.path, function(err, blob) {
+    process.stderr.on('data', function(err) {
+        return callback(new Error('CameraManager::execute: device failed: ' + err));
+    });
+
+    var blob = new nitrogen.Blob({
+        content_type: shot.content_type
+    });
+
+    blob.save(self.session, process.stdout, function(err, blob) {
         if (err) return callback(err);
 
-        blob.save(self.session, fs.createReadStream(shot.path), function(err, blob) {
-            if (err) return callback(err);
+        var message = new nitrogen.Message({
+            type: 'image',
+            link: blob.link,
 
-            var message = new nitrogen.Message({
-                type: blob.message_type,
-                link: blob.link,
-
-                body: {
-                    url: blob.url
-                }
-            });
-
-            for (var attribute in attributes) {
-                message[attribute] = attributes[attribute];
+            body: {
+                url: blob.url
             }
+        });
 
-            self.session.log.debug("CameraManager::sendImage: sending message: " + JSON.stringify(message));
+        for (var attribute in attributes) {
+            message[attribute] = attributes[attribute];
+        }
 
-            message.send(self.session, function(err, messages) {
-                if (err) return callback("CameraManager::sendImage: failed to send message for image: " + err);
+        self.session.log.info("CameraManager::sendImage: sending message: " + JSON.stringify(message));
 
-                self.session.log.info("CameraManager::sendImage: image sent: " + JSON.stringify(messages));
+        message.send(self.session, function(err, messages) {
+            if (err) return callback("CameraManager::sendImage: failed to send message for image: " + err);
 
-                callback(null, messages[0]);
-            });
+            self.session.log.info("CameraManager::sendImage: image sent: " + JSON.stringify(messages));
+
+            callback(null, messages[0]);
         });
     });
 };
