@@ -22,7 +22,7 @@ CameraManager.prototype.executeQueue = function(callback) {
     var executeCommand = activeCommands[0];
 
     // TODO: generalize to allow for video command
-    
+
 //    var deviceFunction;
 
 //    if (executeCommand.body.command === 'snapshot')
@@ -35,7 +35,7 @@ CameraManager.prototype.executeQueue = function(callback) {
     var self = this;
     var messagesGenerated = [];
 
-    this.device.snapshot(options, function(process, shot) {        
+    this.device.snapshot(options, function(stream, shot) {
         // walk through the list of commands and see which ones we can satisfy.
         // as we do satisfy them, add them to response_to and incorporate their attributes.
 
@@ -58,7 +58,7 @@ CameraManager.prototype.executeQueue = function(callback) {
         });
 
         // only send a message if we are able to satisfy at least one command in the queue.
-        self.sendResponse(process, shot, attributes, function(err, message) {
+        self.sendResponse(stream, shot, attributes, function(err, message) {
             if (err) return callback(err);
 
             self.process(message);
@@ -82,18 +82,14 @@ CameraManager.prototype.obsoletes = function(downstreamMsg, upstreamMsg) {
         downstreamMsg.is('image') && downstreamMsg.isResponseTo(upstreamMsg) && upstreamMsg.body.command === "snapshot";
 };
 
-CameraManager.prototype.sendResponse = function(process, shot, attributes, callback) {
+CameraManager.prototype.sendResponse = function(stream, shot, attributes, callback) {
     var self = this;
-
-    process.stderr.on('data', function(err) {
-        return callback(new Error('CameraManager::execute: device failed: ' + err));
-    });
 
     var blob = new nitrogen.Blob({
         content_type: shot.content_type
     });
 
-    blob.save(self.session, process.stdout, function(err, blob) {
+    blob.save(self.session, stream, function(err, blob) {
         if (err) return callback(err);
 
         var message = new nitrogen.Message({
