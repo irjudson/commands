@@ -119,9 +119,15 @@ CameraManager.prototype.sendResponse = function(stream, shot, attributes, callba
 
 CameraManager.prototype.start = function(session, callback) {
     var filter = {
-        $and: [ 
-            { $or: [ { to: this.device.id }, { from: this.device.id } ] },
-            { $or: [ { type: 'cameraCommand'}, { type: 'image' } ] }
+        type: {
+            $in: [
+                'cameraCommand',
+                'image'
+            ]
+        },
+        $or: [
+            { from: this.device.id },
+            { to: this.device.id }
         ]
     };
 
