@@ -159,9 +159,15 @@ ReactorManager.prototype.start = function(session, callback) {
         if (err) return session.log.error('failed to restore reactor: ' + err);
 
         var filter = {
-            $and: [ 
-                { $or: [ { to: self.device.id }, { from: self.device.id } ] },
-                { $or: [ { type: 'reactorCommand'}, { type: 'reactorState' } ] }
+            type: {
+                $in: [
+                    'reactorCommand',
+                    'reactorStatus'
+                ]
+            },
+            $or: [
+                { from: self.device.id },
+                { to: self.device.id }
             ]
         };
 
