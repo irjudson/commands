@@ -28,10 +28,10 @@ CameraManager.prototype.executeQueue = function(callback) {
 //    if (executeCommand.body.command === 'snapshot')
 //        deviceFunction = this.device.snapshot;
 //    else
-//        deviceFunction = this.device.recordVideo;   
-        
-    var options = executeCommand.body.options || {};  
- 
+//        deviceFunction = this.device.recordVideo;
+
+    var options = executeCommand.body.options || {};
+
     var self = this;
     var messagesGenerated = [];
 
@@ -95,7 +95,7 @@ CameraManager.prototype.sendResponse = function(stream, shot, attributes, callba
         var message = new nitrogen.Message({
             type: 'image',
             link: blob.link,
-
+            tags: [ nitrogen.CommandManager.commandTag(self.session) ],
             body: {
                 url: blob.url
             }
@@ -118,6 +118,8 @@ CameraManager.prototype.sendResponse = function(stream, shot, attributes, callba
 };
 
 CameraManager.prototype.start = function(session, callback) {
+    // TODO: remove and use command tags once tags have percolated in.
+
     var filter = {
         type: {
             $in: [
