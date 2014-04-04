@@ -97,8 +97,12 @@ ReactorManager.prototype.restore = function(callback) {
     var self = this;
     var state = {};
 
-    nitrogen.Message.find(this.session, 
-        { type: 'reactorState', from: this.device.id }, { ts: -1, limit: 1 }, 
+    var filter = {
+       type: 'reactorState',
+       tags: nitrogen.CommandManager.commandTag(this.session)
+    }
+
+    nitrogen.Message.find(this.session, filter, { ts: -1, limit: 1 },
         function(err, messages) {
             if (err) return callback(err);
 
@@ -114,7 +118,7 @@ ReactorManager.prototype.restore = function(callback) {
                 if (self.device.instances[instanceId].state === 'running') {
                     if (self.device.instances[instanceId].command) {
                         self.session.log.info('---> starting');
-                        self.device.start(self.session, self.device.instances[instanceId].command, self.statusCallback()); 
+                        self.device.start(self.session, self.device.instances[instanceId].command, self.statusCallback());
                     } else {
                         self.session.log.warn('but no command to start instance --> not starting.');
                     }
@@ -143,7 +147,8 @@ ReactorManager.prototype.statusCallback = function() {
             response_to: responseTo,
             body: {
                 state: state
-            }
+            },
+            tags: [ nitrogen.CommandManager.commandTag(self.session) ]
         });
 
         self.process(stateMessage);
@@ -155,21 +160,23 @@ ReactorManager.prototype.start = function(session, callback) {
     var self = this;
     this.session = session;
 
+    // TODO: remove and use command tags
+
+    var filter = {
+        type: {
+           $in: [
+                'reactorCommand',
+                'reactorStatus'
+            ]
+        },
+        $or: [
+            { from: self.device.id },
+            { to: self.device.id }
+        ]
+    };
+
     this.restore(function(err) {
         if (err) return session.log.error('failed to restore reactor: ' + err);
-
-        var filter = {
-            type: {
-                $in: [
-                    'reactorCommand',
-                    'reactorStatus'
-                ]
-            },
-            $or: [
-                { from: self.device.id },
-                { to: self.device.id }
-            ]
-        };
 
         return nitrogen.CommandManager.prototype.start.call(self, session, filter, callback);
     });
