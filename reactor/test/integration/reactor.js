@@ -12,52 +12,52 @@ describe('reactor', function() {
         // that is used for the tests.
 
         var user = new nitrogen.User({ nickname: 'user',
-                                       email: process.env.NITROGEN_EMAIL, 
+                                       email: process.env.NITROGEN_EMAIL,
                                        password: process.env.NITROGEN_PASSWORD });
 
 
         var lifecycleSequence = [
-            { 
-                state: 'installing' 
+            {
+                state: 'installing'
             },
-            { 
-                state: 'stopped', 
-                message: new nitrogen.Message({ 
-                    type: 'reactorCommand', 
-                    body: { 
+            {
+                state: 'stopped',
+                message: new nitrogen.Message({
+                    type: 'reactorCommand',
+                    body: {
                         command: 'start',
-                        instance_id: '1' 
+                        instance_id: '1'
                     }
                 })
             },
             {
-                state: 'impersonating'  
+                state: 'impersonating'
             },
             {
-                state: 'starting'  
+                state: 'starting'
             },
             {
                 state: 'running',
-                message: new nitrogen.Message({ 
-                    type: 'reactorCommand', 
-                    body: { 
+                message: new nitrogen.Message({
+                    type: 'reactorCommand',
+                    body: {
                         command: 'stop',
-                        instance_id: '1' 
+                        instance_id: '1'
                     }
-                })                       
+                })
             },
             {
                 state: 'stopping'
             },
             {
                 state: 'stopped',
-                message: new nitrogen.Message({ 
-                    type: 'reactorCommand', 
-                    body: { 
+                message: new nitrogen.Message({
+                    type: 'reactorCommand',
+                    body: {
                         command: 'uninstall',
-                        instance_id: '1' 
+                        instance_id: '1'
                     }
-                })                       
+                })
             },
             {
                 state: 'uninstalling'
@@ -66,9 +66,10 @@ describe('reactor', function() {
 
         service.authenticate(user, function(err, session, user) {
 
-            nitrogen.Principal.find(session, { type: 'reactor', name: 'testReactor' }, {}, function(err, principals) {
+            nitrogen.Principal.find(session, { type: 'reactor', name: 'Cloud Reactor' }, {}, function(err, principals) {
                 assert.ifError(err);
 
+                console.log('here');
                 var reactor = principals[0];
 
                 session.onMessage({ from: reactor.id, type: 'reactorState' }, function(message) {
@@ -79,9 +80,10 @@ describe('reactor', function() {
 
                         if (step.message) {
                             step.message.to = reactor.id;
-                            step.message.send(session);                        
-                        }                                            
-                    } else {                        
+                            step.message.tags = [ nitrogen.CommandManager.commandTag(reactor.id) ];
+                            step.message.send(session);
+                        }
+                    } else {
                         assert(!message.body.state || !message.body.state['1']);
                     }
 
@@ -91,18 +93,20 @@ describe('reactor', function() {
 
                 // kickstart the lifecycle with installation after letting subscription connect settle.
                 setTimeout(function() {
-                    new nitrogen.Message({ 
-                        type: 'reactorCommand', 
+                    new nitrogen.Message({
+                        type: 'reactorCommand',
+                        tags: [ nitrogen.CommandManager.commandTag(reactor.id) ],
                         to: reactor.id,
-                        body: { 
+                        body: {
                             command: 'install',
                             module: 'nitrogen-test-app',
                             version: "~0.1",
                             execute_as: reactor.id,
                             params: {},
-                            instance_id: '1' 
-                        } 
+                            instance_id: '1'
+                        }
                     }).send(session);
+                    console.log('sent install message: ');
                 }, 200);
             });
         });
