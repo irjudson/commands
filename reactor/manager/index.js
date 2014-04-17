@@ -110,17 +110,9 @@ ReactorManager.prototype.isRelevant = function(message) {
 ReactorManager.prototype.obsoletes = function(downstreamMsg, upstreamMsg) {
     if (nitrogen.CommandManager.obsoletes(downstreamMsg, upstreamMsg)) return true;
 
-    // we only want to execute install and uninstall commands once.
-
-    // we only want to execute start and stop commands if they don't
-    // match the current state of the reactor.  this means on restart of a reactor
-    // we might execute the commands again.
-
     var obsoleted = downstreamMsg.is('reactorState') && upstreamMsg.is('reactorCommand')
         && downstreamMsg.isResponseTo(upstreamMsg)
-        || downstreamMsg.is('reactorStatus') && upstreamMsg.is('reactorStatus')
-        || downstreamMsg.is('reactorCommand') && upstreamMsg.is('reactorCommand') &&
-           downstreamMsg.body.instance_id === upstreamMsg.body.instance_id;
+        || downstreamMsg.is('reactorStatus') && upstreamMsg.is('reactorStatus');
 
     return obsoleted;
 };
