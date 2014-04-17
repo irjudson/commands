@@ -123,7 +123,7 @@ ReactorManager.prototype.restore = function(callback) {
 
     var filter = {
        type: 'reactorState',
-       tags: nitrogen.CommandManager.commandTag(this.session)
+       tags: nitrogen.CommandManager.commandTag(this.device.id)
     };
 
     // find the last reactorState message and restore instances to that state.
