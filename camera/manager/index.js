@@ -95,7 +95,7 @@ CameraManager.prototype.sendResponse = function(stream, shot, attributes, callba
         var message = new nitrogen.Message({
             type: 'image',
             link: blob.link,
-            tags: [ nitrogen.CommandManager.commandTag(self.session) ],
+            tags: [ nitrogen.CommandManager.commandTag(self.device.id) ],
             body: {
                 url: blob.url
             }
@@ -118,19 +118,8 @@ CameraManager.prototype.sendResponse = function(stream, shot, attributes, callba
 };
 
 CameraManager.prototype.start = function(session, callback) {
-    // TODO: remove and use command tags once tags have percolated in.
-
     var filter = {
-        type: {
-            $in: [
-                'cameraCommand',
-                'image'
-            ]
-        },
-        $or: [
-            { from: this.device.id },
-            { to: this.device.id }
-        ]
+        tags: nitrogen.CommandManager.commandTag(this.device.id)
     };
 
     return nitrogen.CommandManager.prototype.start.call(this, session, filter, callback);
