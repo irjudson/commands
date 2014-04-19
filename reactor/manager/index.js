@@ -197,10 +197,8 @@ ReactorManager.prototype.start = function(session, callback) {
     var self = this;
     this.session = session;
 
-    // TODO: remove and use command tags
-
     var filter = {
-        tags: nitrogen.CommandManager.commandTag(this.session.principal.id)
+        tags: nitrogen.CommandManager.commandTag(this.device.id)
     };
 
     this.restore(function(err) {
