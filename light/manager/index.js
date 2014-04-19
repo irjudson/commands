@@ -30,6 +30,7 @@ LightManager.prototype.executeQueue = function(callback) {
 
         var message = new nitrogen.Message({
             type: 'lightState',
+            tags: [ nitrogen.CommandManager.commandTag(self.device.id) ],
             response_to: commandIds,
             body: self.state
         });
@@ -67,11 +68,10 @@ LightManager.prototype.process = function(message) {
 };
 
 LightManager.prototype.start = function(session, callback) {
+    // TODO: switch to command tags once they have percolated in.
+
     var filter = {
-        $and: [ 
-            { $or: [ { to: this.device.id }, { from: this.device.id } ] },
-            { $or: [ { type: 'lightCommand'}, { type: 'lightState' } ] }
-        ]
+        tags: nitrogen.CommandManager.commandTag(this.device.id)
     };
 
     return nitrogen.CommandManager.prototype.start.call(this, session, filter, callback);
