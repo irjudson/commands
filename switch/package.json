@@ -13,9 +13,9 @@
     "type": "git",
     "url": "https://github.com/nitrogenjs/commands.git"
   },
-  "version": "0.1.11",
+  "version": "0.1.12",
   "dependencies": {
-    "nitrogen": "~0.1.205"
+    "nitrogen": "~0.1.235"
   },
   "devDependencies": {
     "mocha": "~1.0",

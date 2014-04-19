@@ -23,6 +23,7 @@ SwitchManager.prototype.executeQueue = function(callback) {
             var message = new nitrogen.Message({
                 type: 'switchState',
                 response_to: [ lastCommand.id ],
+                tags: [ nitrogen.CommandManager.commandTag(self.device.id) ],
                 body: {
                     on: state
                 }
@@ -59,22 +60,13 @@ SwitchManager.prototype.process = function(message) {
 
     if (message.is('switchState')) {
         this.state = message.body.on;
-        console.log('new switchManager state: ' + this.state);        
+        console.log('new switchManager state: ' + this.state);
     }
 };
 
 SwitchManager.prototype.start = function(session, callback) {
     var filter = {
-        type: {
-            $in: [
-                'switchCommand',
-                'switchState'
-            ]
-        },
-        $or: [
-            { from: this.device.id },
-            { to: this.device.id }
-        ]
+        tags: nitrogen.CommandManager.commandTag(this.device.id)
     };
 
     return nitrogen.CommandManager.prototype.start.call(this, session, filter, callback);
