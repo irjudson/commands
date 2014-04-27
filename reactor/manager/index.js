@@ -32,24 +32,25 @@ ReactorManager.prototype.isNop = function(executeCommand) {
     if (!currentState[instanceId]) return false;
     if (!currentState[instanceId].command) return false;
 
-    console.log('executeCommand.body.command: ' + executeCommand.body.command);
-    console.log('currentState[instanceId].state: ' + currentState[instanceId].state);
-
-    if (executeCommand.body.command === "start" &&
-        (currentState[instanceId].state !== "stopped"))
+    if (executeCommand.body.command === "uninstall" &&
+        currentState[instanceId].state === "uninstalling") {
         return true;
-
-    if (executeCommand.body.command === "stop" &&
-        (currentState[instanceId].state === "stopped" || currentState[instanceId].state === "stopping"))
-        return true;
+    }
 
     if (executeCommand.body.command === "install" &&
-        currentState[instanceId].state === "installing")
+        currentState[instanceId].state === "installing") {
         return true;
+    }
 
-    if (executeCommand.body.command === "uninstall" &&
-        currentState[instanceId].state === "uninstalling")
+    if (executeCommand.body.command === "start" &&
+        currentState[instanceId].state === "running" || ) {
         return true;
+    }
+
+    if (executeCommand.body.command === "stop" &&
+        currentState[instanceId].state === "stopped") {
+        return true;
+    }
 
     return false;
 };
@@ -59,7 +60,7 @@ ReactorManager.prototype.executeQueue = function(callback) {
 
     var activeCommands = this.activeCommands();
     if (activeCommands.length === 0) {
-        session.log.warn('ReactorManager::executeQueue: no active commands to execute.');
+        this.session.log.info('ReactorManager::executeQueue: no active commands to execute.');
         return callback();
     }
 
@@ -67,7 +68,7 @@ ReactorManager.prototype.executeQueue = function(callback) {
     var statusCallback = this.statusCallback();
 
     if (this.isNop(executeCommand)) {
-        console.log('ReactorManager::executeQueue: command is NOP vs. state: skipping.');
+        this.session.log.info('ReactorManager::executeQueue: isNop: ' + executeCommand.body.command + ' skipping.');
         statusCallback(null, executeCommand, this.device.status());
         return callback();
     }
@@ -129,34 +130,45 @@ ReactorManager.prototype.restore = function(callback) {
     // find the last reactorState message and restore instances to that state.
     //      if instance was stopped -> nop
     //      if instance was installing -> restart installation
+    //      if instance was starting -> restart instance
     //      if instance was running -> restart instance
     nitrogen.Message.find(this.session, filter, { ts: -1, limit: 1 },
         function(err, messages) {
             if (err) return callback(err);
 
+            self.device.instances = {};
+
             if (messages.length > 0) {
-                self.device.instances = messages[0].body.state || {};
-                self.session.log.info('restoring reactor from reactorState @ ' + messages[0].ts);
+                self.device.instances = messages[0].body.state;
+                self.session.log.info('restoring reactor from reactorState @ ' + messages[0].ts + ": " + JSON.stringify(messages[0]));
             } else {
                 self.session.log.info("no reactorState messages found. starting clean.");
             }
 
+            // loop through all of the instances. if there was an ongoing command,
+            // add it to the command queue as a synthetic command at the same timestamp
+            // at the ts of the reactorState so that later commands can invalidate it.
+
             for (var instanceId in self.device.instances) {
-                self.session.log.info('instance id: ' + instanceId + ' is in state: ' + self.device.instances[instanceId].state);
-                if (self.device.instances[instanceId].state === 'running' || self.device.instances[instanceId].state === 'starting') {
-                    if (self.device.instances[instanceId].command) {
-                        self.session.log.info('---> starting');
-                        self.device.start(self.session, self.device.instances[instanceId].command, self.statusCallback());
-                    } else {
-                        self.session.log.warn('but no command to start instance --> not starting.');
-                    }
-                } else if (self.device.instances[instanceId].state === 'installing') {
-                    if (self.device.instances[instanceId].command) {
-                        self.session.log.info('---> installing');
-                        self.device.install(self.session, self.device.instances[instanceId].command, self.statusCallback());
-                    } else {
-                        self.session.log.warn('but no command to install instance --> not installing.');
-                    }
+                var instanceState = self.device.instances[instanceId];
+
+                // back out these 'in progress' states to their previous state, 'stopped'
+                if (instanceState.state === 'running' || instanceState.state === 'starting' || instanceState.state === 'uninstalling') {
+                    instanceState.state = 'stopped';
+                }
+
+                // unless its 'installing', in which case back it out to undefined.
+                if (instanceState.state === 'installing') {
+                    instanceState.state = null;
+                }
+
+                // if there is an command in the reactorState, it means that it was
+                // 'in progress' when the reactor stopped, restart it now by putting it
+                // on the command queue, but with the reactorState's ts.
+                if (self.device.instances[instanceId].command) {
+                    self.device.instances[instanceId].command.ts = messages[0].ts;
+
+                    self.process(new nitrogen.Message(self.device.instances[instanceId].command));
                 }
             }
 
@@ -185,8 +197,6 @@ ReactorManager.prototype.statusCallback = function() {
             },
             tags: [ nitrogen.CommandManager.commandTag(self.device.id) ]
         });
-
-        console.log("SENDING REACTOR STATE MESSAGE: " + JSON.stringify(stateMessage));
 
         self.process(stateMessage);
         stateMessage.send(self.session);
