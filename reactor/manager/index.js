@@ -43,7 +43,7 @@ ReactorManager.prototype.isNop = function(executeCommand) {
     }
 
     if (executeCommand.body.command === "start" &&
-        currentState[instanceId].state === "running" || ) {
+        currentState[instanceId].state === "running") {
         return true;
     }
 
