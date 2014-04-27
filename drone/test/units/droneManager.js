@@ -9,7 +9,6 @@ describe('droneManager', function() {
         var service = new n2.Service(config);
 
         var device = new n2.Device({
-            capabilities: "droneCommand",
             nickname: "switch"
         });
 
