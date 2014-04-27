@@ -31,9 +31,6 @@ describe('reactor', function() {
                 })
             },
             {
-                state: 'impersonating'
-            },
-            {
                 state: 'starting'
             },
             {
@@ -66,7 +63,7 @@ describe('reactor', function() {
 
         service.authenticate(user, function(err, session, user) {
 
-            nitrogen.Principal.find(session, { type: 'reactor', name: 'Cloud Reactor' }, {}, function(err, principals) {
+            nitrogen.Principal.find(session, { type: 'reactor', name: 'Reactor' }, {}, function(err, principals) {
                 assert.ifError(err);
 
                 console.log('here');
