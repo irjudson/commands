@@ -9,7 +9,6 @@ describe('switchManager', function() {
         var service = new nitrogen.Service(config);
 
         var switchDevice = new nitrogen.Device({
-            capabilities: "switchCommand",
             nickname: "switch"
         });
 

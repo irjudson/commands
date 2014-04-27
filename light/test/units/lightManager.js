@@ -9,7 +9,6 @@ describe('lightManager', function() {
         var service = new nitrogen.Service(config);
 
         var lightDevice = new nitrogen.Device({
-            capabilities: "lightCommand",
             nickname: "light"
         });
 

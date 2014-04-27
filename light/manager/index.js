@@ -22,7 +22,7 @@ LightManager.prototype.executeQueue = function(callback) {
 
     this.activeCommands().forEach(function(command) {
         self.applyCommand(command);
-        commandIds.push(command.id)
+        commandIds.push(command.id);
     });
 
     this.device.set(this.state, function(err) {
