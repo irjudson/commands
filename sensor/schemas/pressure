@@ -1,0 +1,10 @@
+{
+    "title": "pressure",
+    "type": "object",
+    "properties": {
+        "pressure": {
+            "type": "number",
+            "required": true
+        }
+    }
+}
