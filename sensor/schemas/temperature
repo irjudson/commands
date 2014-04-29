@@ -1,0 +1,10 @@
+{
+    "title": "temperature",
+    "type": "object",
+    "properties": {
+        "temperature": {
+            "type": "number",
+            "required": true
+        }
+    }
+}

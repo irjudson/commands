@@ -1,0 +1,10 @@
+{
+    "title": "sensorCommand",
+    "type": "object",
+    "properties": {
+        "interval": {
+            "type": "number",
+            "required": true
+        }
+    }
+}
