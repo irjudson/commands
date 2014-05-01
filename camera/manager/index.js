@@ -95,7 +95,7 @@ CameraManager.prototype.sendResponse = function(stream, shot, attributes, callba
         var message = new nitrogen.Message({
             type: 'image',
             link: blob.link,
-            tags: [ nitrogen.CommandManager.commandTag(self.device.id) ],
+            tags: [],
             body: {
                 url: blob.url
             }
@@ -104,6 +104,8 @@ CameraManager.prototype.sendResponse = function(stream, shot, attributes, callba
         for (var attribute in attributes) {
             message[attribute] = attributes[attribute];
         }
+
+        message.tags.push(nitrogen.CommandManager.commandTag(self.device.id));
 
         self.session.log.info("CameraManager::sendImage: sending message: " + JSON.stringify(message));
 
