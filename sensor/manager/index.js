@@ -19,7 +19,7 @@ SensorManager.prototype.applyCommand = function(command) {
     }
 };
 
-SensorManager.prototype.takeMeasurement = function(commandIds, callback) {
+SensorManager.prototype.measure = function(commandIds, callback) {
     var self = this;
 
     this.device.measure(function(err, messages) {
@@ -56,7 +56,7 @@ SensorManager.prototype.executeQueue = function(callback) {
 
     // setup interval
     this.measureInterval = setInterval(function() {
-        self.takeMeasurement(commandIds);
+        self.measure(commandIds);
     }, this.state.interval);
 
     // immediately take measurement

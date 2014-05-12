@@ -1,0 +1,10 @@
+{
+    "title": "ultraviolet",
+    "type": "object",
+    "properties": {
+        "ultraviolet": {
+            "type": "number",
+            "required": true
+        }
+    }
+}
