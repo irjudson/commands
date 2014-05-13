@@ -8,14 +8,15 @@ describe('sensorManager', function() {
     it('should be able to start a SensorManager with a device', function(done) {
         var service = new nitrogen.Service(config);
 
-        var sensorDevice = new nitrogen.Device({
-            nickname: "sensor"
+        var thermometer = new nitrogen.Device({
+            nickname: "sensor",
+            tags: ['sends:temperature']
         });
 
-        service.connect(sensorDevice, function(err, session) {
+        service.connect(thermometer, function(err, session, thermometer) {
             assert.ifError(err);
 
-            new SensorManager(sensorDevice).start(session, function(err) {
+            new SensorManager(thermometer).start(session, function(err) {
                 assert.ifError(err);
                 done();
             });

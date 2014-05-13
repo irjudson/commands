@@ -1,0 +1,10 @@
+{
+    "title": "humidity",
+    "type": "object",
+    "properties": {
+        "humidity": {
+            "type": "number",
+            "required": true
+        }
+    }
+}
