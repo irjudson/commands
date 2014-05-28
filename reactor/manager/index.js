@@ -140,7 +140,12 @@ ReactorManager.prototype.restore = function(callback) {
 
             if (messages.length > 0) {
                 self.device.instances = messages[0].body.state;
-                self.session.log.info('restoring reactor from reactorState @ ' + messages[0].ts + ": " + JSON.stringify(messages[0]));
+                self.session.log.info('restoring reactor from reactorState @ ' + messages[0].ts);
+                var state = messages[0].body.state;
+                Object.keys(state).forEach(function(key) {
+                    self.session.log.info('instance: ' + key);
+                    self.session.log.info('state : ' + JSON.stringify(state[key]));
+                });
             } else {
                 self.session.log.info("no reactorState messages found. starting clean.");
             }
@@ -150,6 +155,7 @@ ReactorManager.prototype.restore = function(callback) {
             // at the ts of the reactorState so that later commands can invalidate it.
 
             for (var instanceId in self.device.instances) {
+                self.session.log.info("reactor instance: " + instanceId + " was previously in state: " + self.device.instances[instanceId].state);
                 var instanceState = self.device.instances[instanceId];
 
                 // back out these 'in progress' states to their previous state, 'stopped'
@@ -165,10 +171,13 @@ ReactorManager.prototype.restore = function(callback) {
                 // if there is an command in the reactorState, it means that it was
                 // 'in progress' when the reactor stopped, restart it now by putting it
                 // on the command queue, but with the reactorState's ts.
-                if (self.device.instances[instanceId].command) {
-                    self.device.instances[instanceId].command.ts = messages[0].ts;
+                var command = self.device.instances[instanceId].command;
+                if (command) {
+                    command.ts = new Date();
 
-                    self.process(new nitrogen.Message(self.device.instances[instanceId].command));
+                    self.session.log.info("reactor instance: " + instanceId + ": reissuing command: " + command.body.command);
+
+                    self.process(new nitrogen.Message(command));
                 }
             }
 
@@ -199,7 +208,9 @@ ReactorManager.prototype.statusCallback = function() {
         });
 
         self.process(stateMessage);
-        stateMessage.send(self.session);
+        stateMessage.send(self.session, function(err) {
+            if (err) console.log('error sending reactor status message: ' + err);
+        });
     };
 };
 
