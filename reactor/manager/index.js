@@ -139,13 +139,16 @@ ReactorManager.prototype.restore = function(callback) {
             self.device.instances = {};
 
             if (messages.length > 0) {
-                self.device.instances = messages[0].body.state;
                 self.session.log.info('restoring reactor from reactorState @ ' + messages[0].ts);
-                var state = messages[0].body.state;
-                Object.keys(state).forEach(function(key) {
-                    self.session.log.info('instance: ' + key);
-                    self.session.log.info('state : ' + JSON.stringify(state[key]));
-                });
+
+                if (messages[0].body.state) {
+                    self.device.instances = messages[0].body.state;
+                    var state = messages[0].body.state;
+                    Object.keys(state).forEach(function(key) {
+                        self.session.log.info('instance: ' + key);
+                        self.session.log.info('state : ' + JSON.stringify(state[key]));
+                    });                    
+                }
             } else {
                 self.session.log.info("no reactorState messages found. starting clean.");
             }
