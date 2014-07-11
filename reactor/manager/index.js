@@ -226,7 +226,10 @@ ReactorManager.prototype.start = function(session, callback) {
     };
 
     this.restore(function(err) {
-        if (err) return session.log.error('failed to restore reactor: ' + err);
+        if (err) {
+            session.log.error('failed to restore reactor: ' + err);
+            return callback(err);
+        }
 
         return nitrogen.CommandManager.prototype.start.call(self, session, filter, callback);
     });
