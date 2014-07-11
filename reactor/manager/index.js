@@ -9,7 +9,13 @@ function ReactorManager() {
     process.on('exit', function() {
         self.device.shutdown();
     });
+
+    setInterval(function() {
+        self.restartFailed();
+    }, ReactorManager.RESTART_FAILED_INTERVAL);
 }
+
+ReactorManager.RESTART_FAILED_INTERVAL = 60 * 1000;
 
 ReactorManager.prototype = Object.create(nitrogen.CommandManager.prototype);
 ReactorManager.prototype.constructor = ReactorManager;
@@ -147,7 +153,7 @@ ReactorManager.prototype.restore = function(callback) {
                     Object.keys(state).forEach(function(key) {
                         self.session.log.info('instance: ' + key);
                         self.session.log.info('state : ' + JSON.stringify(state[key]));
-                    });                    
+                    });
                 }
             } else {
                 self.session.log.info("no reactorState messages found. starting clean.");
@@ -174,7 +180,7 @@ ReactorManager.prototype.restore = function(callback) {
                 // if there is an command in the reactorState, it means that it was
                 // 'in progress' when the reactor stopped, restart it now by putting it
                 // on the command queue, but with the reactorState's ts.
-                var command = self.device.instances[instanceId].command;
+                var command = instanceState.command;
                 if (command) {
                     command.ts = new Date();
 
@@ -188,6 +194,24 @@ ReactorManager.prototype.restore = function(callback) {
             return callback();
         }
     );
+};
+
+ReactorManager.prototype.restartFailed = function() {
+    var self = this;
+
+    this.session.log.info('checking for failed instances');
+
+    for (var instanceId in this.device.instances) {
+        var instanceState = this.device.instances[instanceId];
+
+        if (instanceState.state ===  'failed' && instanceState.command) {
+            this.session.log.info('restarting failed instance: ' + instanceId + ' using command: ' + JSON.stringify(instanceState.command));
+
+            this.device.start(this.session, instanceState.command, this.statusCallback(), function(err) {
+                self.session.log.info('restarted instance: ' + instanceId);
+            });
+        }
+    }
 };
 
 ReactorManager.prototype.statusCallback = function() {
