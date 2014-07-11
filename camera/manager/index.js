@@ -15,7 +15,7 @@ CameraManager.prototype.executeQueue = function(callback) {
 
     var activeCommands = this.activeCommands();
     if (activeCommands.length === 0) {
-        session.log.warn('CameraManager::executeQueue: no active commands to execute.');
+        this.session.log.warn('CameraManager::executeQueue: no active commands to execute.');
         return callback();
     }
 
