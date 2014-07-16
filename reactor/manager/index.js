@@ -167,14 +167,9 @@ ReactorManager.prototype.restore = function(callback) {
                 self.session.log.info("reactor instance: " + instanceId + " was previously in state: " + self.device.instances[instanceId].state);
                 var instanceState = self.device.instances[instanceId];
 
-                // back out these 'in progress' states to their previous state, 'stopped'
-                if (instanceState.state === 'running' || instanceState.state === 'starting' || instanceState.state === 'uninstalling') {
-                    instanceState.state = 'stopped';
-                }
-
-                // unless its 'installing', in which case back it out to undefined.
-                if (instanceState.state === 'installing') {
-                    instanceState.state = null;
+                // back out to failed so these cases are retried
+                if (['installing', 'starting', 'running', 'uninstalling'].indexOf(instanceState.state) !== -1) {
+                    instanceState.state = 'failed';
                 }
 
                 // if there is an command in the reactorState, it means that it was
