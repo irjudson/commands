@@ -194,7 +194,7 @@ ReactorManager.prototype.restore = function(callback) {
 ReactorManager.prototype.restartFailed = function() {
     var self = this;
 
-    this.session.log.info('checking for failed instances');
+    this.session.log.debug('checking for failed instances');
 
     for (var instanceId in this.device.instances) {
         var instanceState = this.device.instances[instanceId];
