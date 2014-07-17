@@ -1,1 +1,0 @@
-exports.DroneManager = require('./droneManager');
