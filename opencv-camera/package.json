@@ -6,7 +6,7 @@
     "url": "https://github.com/nitrogenjs/commands.git"
   },
   "author": "Tim Park <timfpark@gmail.com>",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "licenses": [
     {
       "type": "Apache",
@@ -16,7 +16,7 @@
   "main": "./manager",
   "dependencies": {
     "async": "~0.2.9",
-    "nitrogen-camera": "~0.1.1",
+    "nitrogen-camera": "~0.2",
     "nitrogen-opencv": "~0.3.3"
   },
   "devDependencies": {

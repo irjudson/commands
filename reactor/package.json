@@ -13,10 +13,10 @@
     "type": "git",
     "url": "https://github.com/nitrogenjs/commands.git"
   },
-  "version": "0.1.34",
+  "version": "0.2.0",
   "dependencies": {
-    "nitrogen": "~0.1.328",
-    "nitrogen-leveldb-store": "~0.1.203"
+    "nitrogen": "~0.2",
+    "nitrogen-leveldb-store": "~0.2"
   },
   "devDependencies": {
     "mocha": "~1.17",
