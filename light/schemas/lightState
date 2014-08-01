@@ -2,24 +2,19 @@
     "title": "lightState",
     "type": "object",
     "properties": {
-        "bri": {
+        "brightness": {
             "type": "number",
-            "required": false        
+            "required": false
+        },
+
+        "frequency": {
+            "type": "number",
+            "required": false
         },
 
         "hue": {
             "type": "number",
-            "required": false        
-        },
-
-        "on": {
-            "type": "boolean",
             "required": false
-        },
-                
-        "sat": {
-            "type": "number",
-            "required": false        
         }
     }
 }

@@ -41,7 +41,6 @@ LightManager.prototype.executeQueue = function(callback) {
             self.process(messages[0]);
             callback();
         });
-
     });
 };
 
