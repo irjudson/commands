@@ -72,9 +72,6 @@ SensorManager.prototype.setupMeasurements = function() {
     this.measureInterval = setInterval(function() {
         self.measure();
     }, this.state.interval);
-
-    // immediately take measurement
-    self.measure();
 };
 
 SensorManager.prototype.start = function(session, callback) {
