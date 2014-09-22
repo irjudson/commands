@@ -1,6 +1,6 @@
 var assert = require('assert')
   , config = require('../config')
-  , HeatworksDevice = require('nitrogen-heatworks')
+  , HeatworksDevice = require('nitrogen-heatworks-device')
   , HeatworksManager = require('../../manager')
   , nitrogen = require('nitrogen');
 
