@@ -72,6 +72,9 @@ SensorManager.prototype.setupMeasurements = function() {
     this.measureInterval = setInterval(function() {
         self.measure();
     }, this.state.interval);
+
+    // immediately take measurement
+    self.measure();
 };
 
 SensorManager.prototype.start = function(session, callback) {
@@ -81,11 +84,11 @@ SensorManager.prototype.start = function(session, callback) {
 
     var self = this;
 
-    return nitrogen.CommandManager.prototype.start.call(this, session, filter, function() {
-        self.setupMeasurements();
-
+    nitrogen.CommandManager.prototype.start.call(this, session, filter, function() {
         if (callback) return callback();
     });
+
+    this.setupMeasurements();
 };
 
 module.exports = SensorManager;
